@@ -1,6 +1,0 @@
-graph logo 
-{
-    layout=circo;
-    node [ label ="", shape=circle];
-    a--b--c--d--e--f;
-}
