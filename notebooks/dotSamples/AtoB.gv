@@ -1,6 +1,0 @@
-digraph DirectedAtoB {
-
-       A;
-       B;
-       A -> B;
-}

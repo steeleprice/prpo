@@ -4,25 +4,6 @@ SHELL := bash
 .PHONY: default
 default: dotfiles dotnet-restore
 
-.PHONY: zsh
-zsh: ## Ensures zsh is setup
-	THEME="powerline" \
-	# clone if set \
-	THEME_URL="powerline" \
-	if [${THEME_URL} != ""] \
-		get-theme \ 
-	fi \
-    ZSH=${ZSH:-/home/${USERNAME}/.oh-my-zsh} \
-	curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh . --unattended \
-    sed -i -e 's/ZSH_THEME=.*/ZSH_THEME="'${THEME}'"/g' ~/.zshrc \
-	rm .install.sh \
-    echo "installed ohmyzsh."
-
-.PHONY: get-theme
-get-theme:
-	cd /home/${USERNAME}/.oh-my-zsh/themes
-	wget https://raw.githubusercontent.com/jeremyFreeAgent/oh-my-zsh-powerline-theme/master/powerline.zsh-theme
-	cd /home/${USERNAME}
 ## We are getting universal fonts that work for powerline in the os
 # .PHONY: fonts
 # fonts: ## Install fonts we want, we should make these modules...
@@ -55,7 +36,6 @@ dotfiles: ## Installs the dotfiles.
 	# 	f=$$(basename $$file); \
 	# 	ln -sfn $$file $(HOME)/.gnupg/$$f; \
 	# done; 
-	ln -snf $(CURDIR)/gitignore $(HOME)/.gitignore;
 	mkdir -p $(HOME)/.config;
 	ln -snf $(CURDIR)/dotnet-tools.json $(HOME)/.config/dotnet-tools.json;
 

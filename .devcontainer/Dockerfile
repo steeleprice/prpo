@@ -8,9 +8,6 @@ ARG REPO=mcr.microsoft.com/dotnet/aspnet
 FROM $REPO:5.0-buster-slim-amd64
 
 # Install needed packages and setup non-root user.
-ARG SOURCE_SOCKET=/var/run/docker-host.sock
-ARG TARGET_SOCKET=/var/run/docker.sock
-
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -18,6 +15,34 @@ ARG USER_GID=$USER_UID
 # [Option] Upgrade OS packages to their latest versions
 ARG UPGRADE_PACKAGES="true"
 ARG INSTALL_DOTNET_PKGS="dotnet-sdk-3.1 dotnet-sdk-5.0 powershell" 
+ARG INSTALL_DEBIAN_PKGS="apt-utils \
+        original-awk \
+        build-essential \
+        git \
+        openssh-client \
+        gnupg2 \
+        iproute2 \
+        procps \
+        lsof \
+        htop \
+        net-tools \
+        fonts-powerline \
+        psmisc \
+        unzip \
+        zip \
+        less \
+        lsb-release \
+        libc6 \
+        libgcc1 \
+        libgssapi-krb5-2 \
+        libicu[0-9][0-9] \
+        liblttng-ust0 \
+        libstdc++6 \
+        zlib1g \
+        ncdu \
+        man-db \
+        sed \
+        strace" 
 
 # Enable correct mode for dotnet watch (only mode supported in a container)
 ENV DOTNET_USE_POLLING_FILE_WATCHER=true \
@@ -31,7 +56,7 @@ ENV DOTNET_USE_POLLING_FILE_WATCHER=true \
 # get Microsoft Repos and
 # install utils for setup
 RUN apt-get update && apt install -y --no-install-recommends \
-    apt-utils rsync curl wget sudo uidmap apt-transport-https ca-certificates lsb-release gnupg2 \
+    apt-utils rsync curl wget sudo snapd uidmap apt-transport-https ca-certificates lsb-release gnupg2 \
     && wget https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
     && sudo dpkg -i packages-microsoft-prod.deb  \
     ### DON'T FORGET TO UPDATE
@@ -42,34 +67,22 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
     && usermod -aG sudo $USERNAME 
 
-COPY scripts/* /tmp/scripts/
 COPY dotfiles/.* /tmp/dotfiles/
 COPY dotfiles/* /tmp/dotfiles/
 
 RUN rsync -a /tmp/dotfiles/ /home/$USERNAME/dotfiles/ \
     && chown -R $USERNAME:$USERNAME /home/$USERNAME/dotfiles 
 
-# Setup OS 
-RUN sudo /bin/bash -c /tmp/scripts/setup-os.sh "${INSTALL_DOTNET_PKGS}" "${UPGRADE_PACKAGES}"
-
-# Use Docker to switch users so it is encapsulated correctly
-USER $USERNAME
-
-# setup preferences in the home directory (dotfiles)
-RUN /tmp/scripts/setup-user.sh
-
-# finish setting up root shell and docker access    
-USER root
-
-# Set up docker (inside this container and allow vscode user)
-RUN /bin/bash -c /tmp/scripts/setup-docker.sh "${SOURCE_SOCKET}" "${TARGET_SOCKET}" 
+#setup the rest of the environment
+RUN apt install -y --no-install-recommends \
+    && $INSTALL_DEBIAN_PKGS $INSTALL_DOTNET_PKGS
 
 # Clean up
 RUN apt-get autoremove -y \
     && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/* /tmp/scripts /tmp/dotfiles
+    && rm -rf /var/lib/apt/lists/* /tmp/dotfiles
 
 # RUNTIME Entry
 WORKDIR /home/$USERNAME
 
-ENTRYPOINT [ "/usr/local/share/docker-init.sh"]
+ENTRYPOINT [ "/bin/bash" ]
