@@ -4,23 +4,6 @@ SHELL := bash
 .PHONY: default
 default: dotfiles dotnet-restore
 
-## We are getting universal fonts that work for powerline in the os
-# .PHONY: fonts
-# fonts: ## Install fonts we want, we should make these modules...
-# 	#this is a lengthy process, we need checks first.
-# 	ifdef($(shell find $(CURDIR)/.fonts -type f);) do \
-# 		#dir exists, do something
-		
-# 	endif
-
-.PHONY: bin
-bin: ## Installs the local user bin folder.
-	# add aliases for things in bin
-	for file in $(shell find $(CURDIR)/bin -type f -not -name "*-backlight" -not -name ".*.swp"); do \
-		f=$$(basename $$file); \
-		sudo ln -sf $$file /usr/local/bin/$$f; \
-	done
-
 .PHONY: dotfiles
 dotfiles: ## Installs the dotfiles.
 	# add aliases for dotfiles
@@ -49,37 +32,8 @@ dotfiles: ## Installs the dotfiles.
 dotnet-restore: ##Restore user tools
 	dotnet tool restore
 
-.PHONY: etc
-etc: ## Installs the etc directory files.
-	sudo mkdir -p /etc/docker/seccomp
-	for file in $(shell find $(CURDIR)/etc -type f -not -name ".*.swp"); do \
-		f=$$(echo $$file | sed -e 's|$(CURDIR)||'); \
-		sudo mkdir -p $$(dirname $$f); \
-		sudo ln -f $$file $$f; \
-	done
-
-.PHONY: usr
-usr: ## Installs the usr directory files.
-	for file in $(shell find $(CURDIR)/usr -type f -not -name ".*.swp"); do \
-		f=$$(echo $$file | sed -e 's|$(CURDIR)||'); \
-		sudo mkdir -p $$(dirname $$f); \
-		sudo ln -f $$file $$f; \
-	done
-
 .PHONY: clean
 clean: ## Remove only the links in the dotfiles folder 
 	cd /home/vscode
 	find -type l | while IFS= read -r lnk; do if (readlink "$lnk" | grep -q '^/home/vscode/dotfiles/'); then rm "$lnk"; fi; done
 
-
-.PHONY: shellcheck
-shellcheck: ## Runs the shellcheck tests on the scripts.
-	docker run --rm -i $(DOCKER_FLAGS) \
-		--name df-shellcheck \
-		-v $(CURDIR):/usr/src:ro \
-		--workdir /usr/src \
-		vscode/shellcheck ./test.sh
-
-.PHONY: help
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

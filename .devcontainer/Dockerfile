@@ -1,4 +1,4 @@
-# Headspace Dockerfile 
+# prpo Dockerfile 
 # Copyright (c) Amaranthos Labs, LLC. All rights reserved.
 
 # repository to pull from - Microsoft Dotnet 5, Asp.Net
@@ -56,15 +56,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends $INSTALL_ESSENT
     && apt-get update
 
 # Create a non-root user to match UID/GID and put a profile in the home folder.
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    && usermod -aG sudo $USERNAME 
+RUN groupadd --gid ${USER_GID} ${USERNAME} \
+    && useradd -s /bin/bash --uid ${USER_UID} --gid ${USER_GID} -m $USERNAME \
+    && usermod -aG sudo ${USERNAME} 
 
 COPY dotfiles/.* /tmp/dotfiles/
 COPY dotfiles/* /tmp/dotfiles/
 
-RUN rsync -a /tmp/dotfiles/ /home/$USERNAME/dotfiles/ \
-    && chown -R $USERNAME:$USERNAME /home/$USERNAME/dotfiles 
+RUN rsync -a /tmp/dotfiles/ /home/${USERNAME}/dotfiles/ \
+    && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/dotfiles 
 
 #setup the rest of the environment
 RUN apt-get install -y --no-install-recommends \
@@ -74,13 +74,17 @@ RUN apt-get install -y --no-install-recommends \
 # Clean up
 RUN apt-get autoremove -y \
     && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/* /tmp/dotfiles \
+    && rm -rf /var/lib/apt/lists/* /tmp/dotfiles 
 
 # Set Timezone
 RUN echo "America/Phoenix" > /etc/timezone \
     && dpkg-reconfigure -f noninteractive tzdata
 
-# RUNTIME Entry
-WORKDIR /workspaces/prpo
+USER ${USERNAME}
+
+WORKDIR /home/$USERNAME/dotfiles
+
+RUN cd /home/${USERNAME}/dotfiles \
+    && make default
 
 ENTRYPOINT [ "/bin/bash" ]
