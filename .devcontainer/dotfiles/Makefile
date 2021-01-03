@@ -20,13 +20,13 @@ dotfiles: ## Installs the dotfiles.
 	# 	ln -sfn $$file $(HOME)/.gnupg/$$f; \
 	# done; 
 	mkdir -p $(HOME)/.config;
-	ln -s $(CURDIR)/dotnet-tools.json $(HOME)/.config/dotnet-tools.json;
+	ln -snf $(CURDIR)/dotnet-tools.json $(HOME)/.config/dotnet-tools.json;
 
 	# git update-index --skip-worktree $(CURDIR)/.gitconfig;
 	# cd mkdir -p $(HOME)/.config;
 	# mkdir -p $(HOME)/.local/share;
 	# ln -snf $(CURDIR)/.fonts $(HOME)/.local/share/fonts;
-	ln -s $(CURDIR)/.bash_profile $(HOME)/.profile;
+	ln -snf $(CURDIR)/.bash_profile $(HOME)/.profile;
 
 .PHONY: dotnet-restore
 dotnet-restore: ##Restore user tools
