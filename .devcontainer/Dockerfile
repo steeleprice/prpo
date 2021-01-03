@@ -1,11 +1,8 @@
 # prpo Dockerfile 
 # Copyright (c) Amaranthos Labs, LLC. All rights reserved.
 
-# repository to pull from - Microsoft Dotnet 5, Asp.Net
-ARG REPO=mcr.microsoft.com/dotnet/aspnet
-
 # Image we want from the repo: debian 10 - Slim see: https://stackoverflow.com/questions/59794891/how-does-debian-differ-from-debian-slim
-FROM $REPO:5.0-buster-slim-amd64
+FROM debian:10-slim
 
 # Install needed packages and setup non-root user.
 ARG USERNAME=vscode
@@ -32,6 +29,7 @@ libgssapi-krb5-2 \
 libicu[0-9][0-9] \
 liblttng-ust0 \
 libstdc++6 \
+locales \
 zlib1g \
 ncdu \
 man-db \
