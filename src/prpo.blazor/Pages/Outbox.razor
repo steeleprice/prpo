@@ -1,0 +1,18 @@
+@page "/outbox"
+
+<h1>Messages</h1>
+
+<p>Sent: @msgSent</p>
+<input id="inputItem" type="text" >@msg<input/>
+<button class="btn btn-primary" @onclick="SendMessage">send</button>
+
+@code {
+    private int msgSent = 0;
+    private string msg = "";
+
+    private void SendMessage()
+    {
+        msg = "";
+        msgSent++;
+    }
+}
