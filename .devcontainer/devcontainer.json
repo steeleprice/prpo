@@ -1,6 +1,6 @@
 // Copyright 2020 Amaranthos Labs, LLC - All rights reserved
 {
-	"name": "Dotnet.PRPO Development",
+	"name": "prpo Development",
 	"build": {
 		"dockerfile": "Dockerfile",
 		"args": { 
@@ -9,14 +9,14 @@
 			// Options
 			"INSTALL_NODE": "false",
 			"NODE_VERSION": "lts/*",
-			"INSTALL_AZURE_CLI": "false",
+			"INSTALL_AZURE_CLI": "true", //we deploy to azure
 			"UPGRADE_PACKAGES": "true"
 		}
 	},
 
 	// Set container specific defaults for F# in .NET (Core) 2.1+
 	"settings": {
-		"terminal.integrated.shell.linux": "/bin/zsh",
+		"terminal.integrated.shell.linux": "/bin/bash",
 		"FSharp.fsacRuntime": "netcore",
 		"FSharp.useSdkScripts": true
 	},
@@ -37,7 +37,6 @@
         "ionide.ionide-fsharp",
         "ionide.ionide-fake",
         "ionide.ionide-paket",
-		//"ms-vscode.powershell",
 		"ms-vscode.powershell-preview"
 	],
 

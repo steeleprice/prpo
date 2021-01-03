@@ -12,37 +12,31 @@ ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-# [Option] Upgrade OS packages to their latest versions
-ARG UPGRADE_PACKAGES="true"
+ARG INSTALL_ESSENTIALS="apt-utils rsync curl wget sudo snapd git-all uidmap apt-transport-https ca-certificates lsb-release gnupg2"
 ARG INSTALL_DOTNET_PKGS="dotnet-sdk-3.1 dotnet-sdk-5.0 powershell" 
-ARG INSTALL_DEBIAN_PKGS="apt-utils \
-        original-awk \
-        build-essential \
-        git \
-        openssh-client \
-        gnupg2 \
-        iproute2 \
-        procps \
-        lsof \
-        htop \
-        net-tools \
-        fonts-powerline \
-        psmisc \
-        unzip \
-        zip \
-        less \
-        lsb-release \
-        libc6 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libicu[0-9][0-9] \
-        liblttng-ust0 \
-        libstdc++6 \
-        zlib1g \
-        ncdu \
-        man-db \
-        sed \
-        strace" 
+ARG INSTALL_DEBIAN_PKGS="original-awk \
+build-essential \
+procps \
+lsof \
+htop \
+net-tools \
+fonts-powerline \
+psmisc \
+unzip \
+zip \
+less \
+lsb-release \
+libc6 \
+libgcc1 \
+libgssapi-krb5-2 \
+libicu[0-9][0-9] \
+liblttng-ust0 \
+libstdc++6 \
+zlib1g \
+ncdu \
+man-db \
+sed \
+strace" 
 
 # Enable correct mode for dotnet watch (only mode supported in a container)
 ENV DOTNET_USE_POLLING_FILE_WATCHER=true \
@@ -55,10 +49,9 @@ ENV DOTNET_USE_POLLING_FILE_WATCHER=true \
     
 # get Microsoft Repos and
 # install utils for setup
-RUN apt-get update && apt install -y --no-install-recommends \
-    apt-utils rsync curl wget sudo snapd uidmap apt-transport-https ca-certificates lsb-release gnupg2 \
+RUN apt-get update && apt-get install -y --no-install-recommends $INSTALL_ESSENTIALS \
     && wget https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && sudo dpkg -i packages-microsoft-prod.deb  \
+    && dpkg -i packages-microsoft-prod.deb  \
     ### DON'T FORGET TO UPDATE
     && apt-get update
 
@@ -74,15 +67,20 @@ RUN rsync -a /tmp/dotfiles/ /home/$USERNAME/dotfiles/ \
     && chown -R $USERNAME:$USERNAME /home/$USERNAME/dotfiles 
 
 #setup the rest of the environment
-RUN apt install -y --no-install-recommends \
-    && $INSTALL_DEBIAN_PKGS $INSTALL_DOTNET_PKGS
+RUN apt-get install -y --no-install-recommends \
+    $INSTALL_DEBIAN_PKGS \
+    $INSTALL_DOTNET_PKGS
 
 # Clean up
 RUN apt-get autoremove -y \
     && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/* /tmp/dotfiles
+    && rm -rf /var/lib/apt/lists/* /tmp/dotfiles \
+
+# Set Timezone
+RUN echo "America/Phoenix" > /etc/timezone \
+    && dpkg-reconfigure -f noninteractive tzdata
 
 # RUNTIME Entry
-WORKDIR /home/$USERNAME
+WORKDIR /workspaces/prpo
 
 ENTRYPOINT [ "/bin/bash" ]
